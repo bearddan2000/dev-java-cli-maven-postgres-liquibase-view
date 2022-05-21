@@ -1,0 +1,42 @@
+version: '3'
+services:
+  java-srv:
+    build: java-srv
+    volumes:
+      - ./java-srv/log:/root/log
+    depends_on:
+      - liquibase-srv
+    links:
+      - "db:db"
+
+  liquibase-srv:
+    image: webdevops/liquibase:postgres
+    command: update
+    volumes:
+      - ./liquibase-srv:/liquibase
+    environment:
+      - LIQUIBASE_URL=jdbc:postgresql://db/animal?user=maria&password=pass
+      - LIQUIBASE_CHANGELOG=master.xml
+      - LIQUIBASE_USERNAME=maria
+      - LIQUIBASE_PASSWORD=pass
+    depends_on:
+      - db
+    links:
+      - db
+
+  db:
+    image: postgres:alpine
+    environment:
+      - POSTGRES_DB=animal
+      - POSTGRES_USER=maria
+      - POSTGRES_HOST_AUTH_METHOD=trust
+
+#   adminer:
+#     image: adminer
+#     restart: always
+#     ports:
+#       - 80:8080
+#     depends_on:
+#       - liquibase-srv
+#     links:
+#       - "db:db"
